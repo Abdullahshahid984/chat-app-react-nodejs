@@ -1,1 +1,39 @@
-
+stages:
+  - stage:
+      name: Build and Push Docker Images
+      type: CI
+      spec:
+        execution:
+          steps:
+            - step:
+                name: Checkout Code
+                type: GitClone
+                spec:
+                  connectorRef: github_connector
+                  repoName: abdullahshahid984/chat-app-react-nodejs
+                  depth: 1
+            - step:
+                name: Login to ACR
+                type: Run
+                spec:
+                  shell: Sh
+                  command: |
+                    az acr login --name aksdevace01
+            - step:
+                name: Build and Push Backend Image
+                type: BuildAndPushDockerRegistry
+                spec:
+                  connectorRef: acr_connector
+                  repo: aksdevace01.azurecr.io/chat-app-backend
+                  tags:
+                    - latest
+                  dockerfile: ./server/Dockerfile
+            - step:
+                name: Build and Push Frontend Image
+                type: BuildAndPushDockerRegistry
+                spec:
+                  connectorRef: acr_connector
+                  repo: aksdevace01.azurecr.io/chat-app-frontend
+                  tags:
+                    - latest
+                  dockerfile: ./public/Dockerfile
